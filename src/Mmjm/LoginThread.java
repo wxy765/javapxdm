@@ -1,11 +1,16 @@
-package Mmjm;
+package cn.edu.hcnu.client;
+
+
+import cn.edu.hcnu.util.MD5;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import javax.swing.JButton;
@@ -15,7 +20,7 @@ import javax.swing.JTextField;
 
 
 /**
- * µÇÂ¼Ïß³Ì
+ * ç™»å½•çº¿ç¨‹
  */
 public class LoginThread extends Thread {
     private JFrame loginf;
@@ -24,14 +29,14 @@ public class LoginThread extends Thread {
 
     public void run() {
         /*
-         * ÉèÖÃµÇÂ¼½çÃæ
+         * è®¾ç½®ç™»å½•ç•Œé¢
          */
         loginf = new JFrame();
         loginf.setResizable(false);
         loginf.setLocation(300, 200);
         loginf.setSize(400, 150);
         loginf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        loginf.setTitle("ÁÄÌìÊÒ" + " - µÇÂ¼");
+        loginf.setTitle("èŠå¤©å®¤" + " - ç™»å½•");
 
         t = new JTextField("Version " + "1.1.0" + "        By liwei");
         t.setHorizontalAlignment(JTextField.CENTER);
@@ -41,7 +46,7 @@ public class LoginThread extends Thread {
         JPanel loginp = new JPanel(new GridLayout(3, 2));
         loginf.getContentPane().add(loginp);
 
-        JTextField t1 = new JTextField("µÇÂ¼Ãû:");
+        JTextField t1 = new JTextField("ç™»å½•å:");
         t1.setHorizontalAlignment(JTextField.CENTER);
         t1.setEditable(false);
         loginp.add(t1);
@@ -50,7 +55,7 @@ public class LoginThread extends Thread {
         loginname.setHorizontalAlignment(JTextField.CENTER);
         loginp.add(loginname);
 
-        JTextField t2 = new JTextField("ÃÜÂë:");
+        JTextField t2 = new JTextField("å¯†ç :");
         t2.setHorizontalAlignment(JTextField.CENTER);
         t2.setEditable(false);
         loginp.add(t2);
@@ -59,9 +64,9 @@ public class LoginThread extends Thread {
         loginPassword.setHorizontalAlignment(JTextField.CENTER);
         loginp.add(loginPassword);
         /*
-         * ¼àÌıÍË³ö°´Å¥(ÄäÃûÄÚ²¿Àà)
+         * ç›‘å¬é€€å‡ºæŒ‰é’®(åŒ¿åå†…éƒ¨ç±»)
          */
-        JButton b1 = new JButton("ÍË  ³ö");
+        JButton b1 = new JButton("é€€  å‡º");
         loginp.add(b1);
         b1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -69,13 +74,13 @@ public class LoginThread extends Thread {
             }
         });
 
-        final JButton b2 = new JButton("µÇ  Â¼");
+        final JButton b2 = new JButton("ç™»  å½•");
         loginp.add(b2);
 
         loginf.setVisible(true);
 
         /**
-         * ¼àÌıÆ÷,¼àÌı"µÇÂ¼"ButtonµÄµã»÷ºÍTextFieldµÄ»Ø³µ
+         * ç›‘å¬å™¨,ç›‘å¬"ç™»å½•"Buttonçš„ç‚¹å‡»å’ŒTextFieldçš„å›è½¦
          */
         class ButtonListener implements ActionListener {
             private Socket s;
@@ -83,21 +88,37 @@ public class LoginThread extends Thread {
             public void actionPerformed(ActionEvent e) {
                 String username = loginname.getText();
                 String password = loginPassword.getText();
+                PreparedStatement pstmt=null;
+                String sql="";
                 try {
-                    String url = "jdbc:oracle:thin:@localhost:1521:orcl";
-                    String username_db = "wxy";
-                    String password_db = "wxy2000";
+                    String url = "jdbc:oracle:thin:@localhost:1521:orclhc";
+                    String username_db = "opts";
+                    String password_db = "opts1234";
                     Connection conn = DriverManager.getConnection(url, username_db, password_db);
-                    String sql = "SELECT password FROM users WHERE username=?";
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
-                    pstmt.setString(1,username);
+                    sql = "SELECT password FROM users WHERE username=?";
+                    pstmt = conn.prepareStatement(sql);
+                    pstmt.setString(1, username);
                     ResultSet rs = pstmt.executeQuery();
                     if (rs.next()) {
                         String encodePassword = rs.getString("PASSWORD");
                         if (MD5.checkpassword(password, encodePassword)) {
-                            System.out.println("µÇÂ¼³É¹¦");
+                            /*
+                            è·å–æœ¬æœºIP
+                            å¼€å¯ä¸€ä¸ªç«¯å£8888
+                            éšè—ç™»å½•ç•Œé¢
+                            æ˜¾ç¤ºèŠå¤©çª—å£
+                             */
+                            InetAddress addr = InetAddress.getLocalHost();
+                            System.out.println("æœ¬æœºIPåœ°å€: "+addr.getHostAddress());
+                            sql="UPDATE users SET ip=?,port=8888 WHERE username=?";
+                            pstmt=conn.prepareStatement(sql);
+                            pstmt.setString(1,addr.getHostAddress());
+                            pstmt.setString(2,username);
+                            pstmt.executeUpdate();
+                            loginf.setVisible(false);
+                            ChatThreadWindow chatThreadWindow=new ChatThreadWindow();
                         } else {
-                            System.out.println("µÇÂ¼Ê§°Ü");
+                            System.out.println("ç™»å½•å¤±è´¥");
                         }
                     }
                 } catch (SQLException ee) {
@@ -106,11 +127,13 @@ public class LoginThread extends Thread {
                     ex.printStackTrace();
                 } catch (UnsupportedEncodingException ex) {
                     ex.printStackTrace();
+                } catch (UnknownHostException ex) {
+                    ex.printStackTrace();
                 }
 				/*
-				1¡¢¸ù¾İÓÃ»§È¥Êı¾İ¿â°Ñ¼ÓÃÜºóµÄÃÜÂëÄÃµ½
+				1ã€æ ¹æ®ç”¨æˆ·å»æ•°æ®åº“æŠŠåŠ å¯†åçš„å¯†ç æ‹¿åˆ°
 				SELECT password FROM users WHERE username='liwei';
-				2¡¢°ÑµÇÂ¼½çÃæÊäÈëµÄÃÜÂëºÍÊı¾İ¿âÀï¼ÓÃÜºóµÄ½øĞĞ±È¶Ô£¨µ÷ÓÃMD5ÀàµÄcheckpassword·½·¨£©
+				2ã€æŠŠç™»å½•ç•Œé¢è¾“å…¥çš„å¯†ç å’Œæ•°æ®åº“é‡ŒåŠ å¯†åçš„è¿›è¡Œæ¯”å¯¹ï¼ˆè°ƒç”¨MD5ç±»çš„checkpasswordæ–¹æ³•ï¼‰
 				 */
             }
         }

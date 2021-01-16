@@ -4,7 +4,7 @@
     <file url="file://$PROJECT_DIR$/src/Client.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/GetMessageThread.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/Mmjm/ChatThreadWindow.java" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/Mmjm/Client.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/Mmjm/Client.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/Mmjm/LoginThread.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/Mmjm/MD5.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/SocketDemo.java" charset="GBK" />

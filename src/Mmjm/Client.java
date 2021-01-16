@@ -1,8 +1,10 @@
 package Mmjm;
 
-//ÁÄÌìÊÒ¿Í»§¶Ë
+import Mmjm.LoginThread;
+
+//èŠå¤©å®¤å®¢æˆ·ç«¯
 public class Client {
-	//Ö÷·½·¨:Æô¶¯µÇÂ¼Ïß³Ì
+	//ä¸»æ–¹æ³•:å¯åŠ¨ç™»å½•çº¿ç¨‹
 	public static void main(String[] args) throws Exception {
 		Thread login = new LoginThread();
 		login.start();

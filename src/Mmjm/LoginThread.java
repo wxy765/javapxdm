@@ -1,6 +1,12 @@
 package Mmjm;
 
-import java.awt.*;
+
+import Mmjm.ChatThreadWindow;
+import Mmjm.MD5;
+
+
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -8,6 +14,7 @@ import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import javax.swing.*;
+
 
 /**
  * 登录线程
@@ -78,12 +85,12 @@ public class LoginThread extends Thread {
             public void actionPerformed(ActionEvent e) {
                 String username = loginname.getText();
                 String password = loginPassword.getText();
-                PreparedStatement pstmt=null;
-                String sql="";
+                PreparedStatement pstmt = null;
+                String sql = "";
                 try {
                     String url = "jdbc:oracle:thin:@localhost:1521:orcl";
-                    String username_db = "wxy";
-                    String password_db = "wxy2000";
+                    String username_db = "opts";
+                    String password_db = "opts1234";
                     Connection conn = DriverManager.getConnection(url, username_db, password_db);
                     sql = "SELECT password FROM users WHERE username=?";
                     pstmt = conn.prepareStatement(sql);
@@ -99,14 +106,27 @@ public class LoginThread extends Thread {
                             显示聊天窗口
                              */
                             InetAddress addr = InetAddress.getLocalHost();
-                            System.out.println("本机IP地址: "+addr.getHostAddress());
-                            sql="UPDATE users SET ip=?,port=8888 WHERE username=?";
-                            pstmt=conn.prepareStatement(sql);
-                            pstmt.setString(1,addr.getHostAddress());
-                            pstmt.setString(2,username);
+                            System.out.println("本机IP地址: " + addr.getHostAddress());
+                            int port=1688;
+                            DatagramSocket ds=null;
+                            while(true) {
+                                try {
+                                    ds=new DatagramSocket(port);
+                                    break;
+                                } catch (IOException ex) {
+                                    port += 1;
+                                    //ex.printStackTrace();
+                                }
+                            }
+                            sql = "UPDATE users SET ip=?,port=?,status=? WHERE username=?";
+                            pstmt = conn.prepareStatement(sql);
+                            pstmt.setString(1, addr.getHostAddress());
+                            pstmt.setInt(2,port);
+                            pstmt.setString(3,"online");
+                            pstmt.setString(4, username);
                             pstmt.executeUpdate();
                             loginf.setVisible(false);
-                            ChatThreadWindow chatThreadWindow=new ChatThreadWindow();
+                            ChatThreadWindow chatThreadWindow = new ChatThreadWindow(username,ds);
                         } else {
                             System.out.println("登录失败");
                         }
